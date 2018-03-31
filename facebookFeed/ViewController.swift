@@ -233,17 +233,17 @@ class FeedCell: UICollectionViewCell {
         addSubview(commentButton)
         addSubview(shareButton)
         
-        addContraintWithFormat(format: "H:|-8-[v0(44)]-8-[v1]|", views: profileImageView, nameLabel)
-        addContraintWithFormat(format: "H:|-4-[v0]-4-|", views: statusTextView)
-        addContraintWithFormat(format: "H:|[v0]|", views: statusImageView)
-        addContraintWithFormat(format: "H:|-12-[v0]-16-[v1]|", views: likesLabel, commentsLabel)
-        addContraintWithFormat(format: "H:|-12-[v0]-12-|", views: dividerLineView)
-        addContraintWithFormat(format: "H:|[v0(v2)][v1(v2)][v2]|", views: likeButton, commentButton, shareButton)
-        addContraintWithFormat(format: "V:|-12-[v0]", views: nameLabel)
-        addContraintWithFormat(format: "V:|-8-[v0(44)]-4-[v1]-4-[v2(200)]-8-[v3(24)]-8-[v4(0.4)][v5(44)]|", views: profileImageView, statusTextView, statusImageView, likesLabel, dividerLineView, likeButton)
-        addContraintWithFormat(format: "V:[v0(128)]|", views: commentsLabel)
-        addContraintWithFormat(format: "V:[v0(44)]|", views: commentButton)
-        addContraintWithFormat(format: "V:[v0(44)]|", views: shareButton)
+        addConstraintsWithFormat(format: "H:|-8-[v0(44)]-8-[v1]|", views: profileImageView, nameLabel)
+        addConstraintsWithFormat(format: "H:|-4-[v0]-4-|", views: statusTextView)
+        addConstraintsWithFormat(format: "H:|[v0]|", views: statusImageView)
+        addConstraintsWithFormat(format: "H:|-12-[v0]-16-[v1]|", views: likesLabel, commentsLabel)
+        addConstraintsWithFormat(format: "H:|-12-[v0]-12-|", views: dividerLineView)
+        addConstraintsWithFormat(format: "H:|[v0(v2)][v1(v2)][v2]|", views: likeButton, commentButton, shareButton)
+        addConstraintsWithFormat(format: "V:|-12-[v0]", views: nameLabel)
+        addConstraintsWithFormat(format: "V:|-8-[v0(44)]-4-[v1]-4-[v2(200)]-8-[v3(24)]-8-[v4(0.4)][v5(44)]|", views: profileImageView, statusTextView, statusImageView, likesLabel, dividerLineView, likeButton)
+        addConstraintsWithFormat(format: "V:[v0(128)]|", views: commentsLabel)
+        addConstraintsWithFormat(format: "V:[v0(44)]|", views: commentButton)
+        addConstraintsWithFormat(format: "V:[v0(44)]|", views: shareButton)
 
     }
 }
@@ -257,7 +257,7 @@ extension UIColor {
 
 extension UIView {
     
-    func addContraintWithFormat(format: String, views: UIView...) {
+    func addConstraintsWithFormat(format: String, views: UIView...) {
         var viewsDictionary = [String: UIView]()
         for (index, view) in views.enumerated() {
             let key = "v\(index)"
