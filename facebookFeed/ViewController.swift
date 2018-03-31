@@ -76,6 +76,7 @@ class FeedController: UICollectionViewController, UICollectionViewDelegateFlowLa
         let feedCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
         
         feedCell.post = posts[indexPath.item]
+        feedCell.feedController = self
         
         return feedCell
     }
@@ -97,9 +98,86 @@ class FeedController: UICollectionViewController, UICollectionViewDelegateFlowLa
         super.viewWillTransition(to: size, with: coordinator)
         collectionView?.collectionViewLayout.invalidateLayout()
     }
+    
+    let blackBackgroundView = UIView()
+    var statusImageView: UIImageView?
+    let zoomImageView = UIImageView()
+    let navBarCoverView = UIView()
+    let tabBarCoverView = UIView()
+    
+    func animateImageView(statusImageView: UIImageView) {
+        self.statusImageView = statusImageView
+        
+        if let startingFrame = statusImageView.superview?.convert(statusImageView.frame, to: nil) {
+            
+            statusImageView.alpha = 0
+            
+            blackBackgroundView.frame = self.view.frame
+            blackBackgroundView.backgroundColor = .black
+            blackBackgroundView.alpha = 0
+            view.addSubview(blackBackgroundView)
+            
+            navBarCoverView.frame = CGRect(x: 0, y: 0, width: 1000, height: 20 + 44)
+            navBarCoverView.backgroundColor = .black
+            navBarCoverView.alpha = 0
+            
+            if let keyWindow = UIApplication.shared.keyWindow {
+                keyWindow.addSubview(navBarCoverView)
+                
+                tabBarCoverView.frame = CGRect(x: 0, y: keyWindow.frame.height - 49, width: 1000, height: 49)
+                tabBarCoverView.backgroundColor = .black
+                tabBarCoverView.alpha = 0
+                keyWindow.addSubview(tabBarCoverView)
+            }
+            
+            zoomImageView.backgroundColor = .red
+            zoomImageView.frame = startingFrame
+            zoomImageView.isUserInteractionEnabled = true
+            zoomImageView.image = statusImageView.image
+            zoomImageView.contentMode = .scaleAspectFill
+            zoomImageView.clipsToBounds = true
+            view.addSubview(zoomImageView)
+            
+            zoomImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(zoomOut)))
+            
+            UIView.animate(withDuration: 0.75, animations: {
+                let height = (self.view.frame.width / startingFrame.width) * startingFrame.height
+                let y = self.view.frame.height / 2 - height / 2
+                self.zoomImageView.frame = CGRect(x: 0, y: y, width: self.view.frame.width, height: height)
+                
+                self.blackBackgroundView.alpha = 1
+                self.navBarCoverView.alpha = 1
+                self.tabBarCoverView.alpha = 1
+            })
+        }
+    }
+    
+    @objc func zoomOut() {
+        if let startingFrame = statusImageView!.superview?.convert(statusImageView!.frame, to: nil) {
+            
+            UIView.animate(withDuration: 0.75, animations: {
+                self.zoomImageView.frame = startingFrame
+                self.blackBackgroundView.alpha = 0
+                self.navBarCoverView.alpha = 0
+                self.tabBarCoverView.alpha = 0
+            }, completion: { (didComplete) in
+                self.zoomImageView.removeFromSuperview()
+                self.blackBackgroundView.removeFromSuperview()
+                self.navBarCoverView.removeFromSuperview()
+                self.tabBarCoverView.removeFromSuperview()
+                self.statusImageView?.alpha = 1
+            })
+        }
+    }
 }
 
 class FeedCell: UICollectionViewCell {
+    
+    var feedController: FeedController?
+    
+    @objc func animate() {
+        feedController?.animateImageView(statusImageView: statusImageView)
+    }
     
     var post: Post? {
         didSet {
@@ -180,6 +258,7 @@ class FeedCell: UICollectionViewCell {
         imageView.image = UIImage(named: "zuckdog")
         imageView.contentMode = .scaleAspectFill
         imageView.layer.masksToBounds = true
+        imageView.isUserInteractionEnabled = true
         return imageView
     }()
     
@@ -232,6 +311,8 @@ class FeedCell: UICollectionViewCell {
         addSubview(likeButton)
         addSubview(commentButton)
         addSubview(shareButton)
+        
+        statusImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(animate)))
         
         addConstraintsWithFormat(format: "H:|-8-[v0(44)]-8-[v1]|", views: profileImageView, nameLabel)
         addConstraintsWithFormat(format: "H:|-4-[v0]-4-|", views: statusTextView)
