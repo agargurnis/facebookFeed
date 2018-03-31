@@ -10,10 +10,53 @@ import UIKit
 
 let cellId = "cellId"
 
+class Post {
+    var name: String?
+    var postStatusText: String?
+    var profileImageName: String?
+    var statusImageName: String?
+    var numLikes: Int?
+    var numComments: Int?
+}
+
 class FeedController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+    
+    var posts = [Post]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let postMark = Post()
+        postMark.name = "Mark Zuckerberg"
+        postMark.postStatusText = "Meanwhile, Beast turned to the dark side."
+        postMark.profileImageName = "zuckprofile"
+        postMark.numLikes = 400
+        postMark.numComments = 123
+        postMark.statusImageName = "zuckdog"
+        
+        let postSteve = Post()
+        postSteve.name = "Steve Jobs"
+        postSteve.postStatusText = "Design is not just what it looks like and feels like. Design is how it works.\n\n" +
+            "Being the richest man in the cemetery doesn't matter to me. Going to bed at night saying we've done something wonderful, that's what matters to me.\n\n" +
+            "Sometimes when you innovate, you make mistakes. It is best to admit them quickly, and get on with improving your other innovations."
+        postSteve.profileImageName = "steve_profile"
+        postSteve.numLikes = 1000
+        postSteve.numComments = 55
+        postSteve.statusImageName = "steve_status"
+        
+        let postGandhi = Post()
+        postGandhi.name = "Mahatma Gandhi"
+        postGandhi.postStatusText = "Live as if you were to die tomorrow; learn as if you were to live forever.\n" +
+            "The weak can never forgive. Forgiveness is the attribute of the strong.\n" +
+            "Happiness is when what you think, what you say, and what you do are in harmony."
+        postGandhi.profileImageName = "gandhi"
+        postGandhi.numLikes = 333
+        postGandhi.numComments = 22
+        postGandhi.statusImageName = "gandhi_status"
+        
+        posts.append(postMark)
+        posts.append(postSteve)
+        posts.append(postGandhi)
         
         navigationItem.title = "Facebook Feed"
         
@@ -26,15 +69,28 @@ class FeedController: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+        return posts.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        return collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+        let feedCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
+        
+        feedCell.post = posts[indexPath.item]
+        
+        return feedCell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 400)
+        
+        if let statusText = posts[indexPath.item].postStatusText {
+            
+            let knownHeight: CGFloat = 8 + 44 + 4 + 4 + 200 + 8 + 24 + 8 + 44 + 24
+            let rect = NSString(string: statusText).boundingRect(with: CGSize(width: view.frame.width, height: 1000), options: NSStringDrawingOptions.usesFontLeading.union(NSStringDrawingOptions.usesLineFragmentOrigin), attributes: [NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14)], context: nil)
+            
+            return CGSize(width: view.frame.width, height: rect.height + knownHeight)
+        }
+        
+        return CGSize(width: view.frame.width, height: 500)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -44,6 +100,47 @@ class FeedController: UICollectionViewController, UICollectionViewDelegateFlowLa
 }
 
 class FeedCell: UICollectionViewCell {
+    
+    var post: Post? {
+        didSet {
+            if let name = post?.name {
+                let attributedText = NSMutableAttributedString(string: name, attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 14)])
+                attributedText.append(NSAttributedString(string: "\nDecember 18 • San Francisco • ", attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 12), NSAttributedStringKey.foregroundColor: UIColor.rgb(red: 155, green: 161, blue: 171)]))
+                
+                let paragraphStyle = NSMutableParagraphStyle()
+                paragraphStyle.lineSpacing = 4
+                
+                attributedText.addAttribute(NSAttributedStringKey.paragraphStyle, value: paragraphStyle, range: NSMakeRange(0, attributedText.string.count))
+                
+                let attachment = NSTextAttachment()
+                attachment.image = UIImage(named: "globe_small")
+                attachment.bounds = CGRect(x: 0, y: -2, width: 12, height: 12)
+                attributedText.append(NSAttributedString(attachment: attachment))
+                
+                nameLabel.attributedText = attributedText
+            }
+            
+            if let statusText = post?.postStatusText {
+                statusTextView.text = statusText
+            }
+            
+            if let profileImageName = post?.profileImageName {
+                profileImageView.image = UIImage(named: profileImageName)
+            }
+            
+            if let statusImageName = post?.statusImageName {
+                statusImageView.image = UIImage(named: statusImageName)
+            }
+            
+            if let numLikes = post?.numLikes {
+                likesLabel.text = String(numLikes) + " Likes"
+            }
+            
+            if let numComments = post?.numComments {
+                commentsLabel.text = String(numComments) + "K Comments"
+            }
+        }
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -59,20 +156,7 @@ class FeedCell: UICollectionViewCell {
         let label = UILabel()
         label.numberOfLines = 2
         
-        let attributedText = NSMutableAttributedString(string: "Mark Zuckerberg", attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 14)])
-        attributedText.append(NSAttributedString(string: "\nDecember 18 • San Francisco • ", attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 12), NSAttributedStringKey.foregroundColor: UIColor.rgb(red: 155, green: 161, blue: 171)]))
         
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 4
-        
-        attributedText.addAttribute(NSAttributedStringKey.paragraphStyle, value: paragraphStyle, range: NSMakeRange(0, attributedText.string.count))
-        
-        let attachment = NSTextAttachment()
-        attachment.image = UIImage(named: "globe_small")
-        attachment.bounds = CGRect(x: 0, y: -2, width: 12, height: 12)
-        attributedText.append(NSAttributedString(attachment: attachment))
-        
-        label.attributedText = attributedText
         return label
     }()
     
@@ -87,6 +171,7 @@ class FeedCell: UICollectionViewCell {
         let textView = UITextView()
         textView.text = "Meanwhile, Beast turned to the dark side."
         textView.font = UIFont.systemFont(ofSize: 14)
+        textView.isScrollEnabled = false
         return textView
     }()
     
@@ -98,9 +183,17 @@ class FeedCell: UICollectionViewCell {
         return imageView
     }()
     
-    let likesCommentsLabel: UILabel = {
+    let likesLabel: UILabel = {
         let label = UILabel()
-        label.text = "488 Likes   10.7K Comments"
+        label.text = "488 Likes"
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = UIColor.rgb(red: 155, green: 161, blue: 171)
+        return label
+    }()
+    
+    let commentsLabel: UILabel = {
+        let label = UILabel()
+        label.text = "10.7K Comments"
         label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = UIColor.rgb(red: 155, green: 161, blue: 171)
         return label
@@ -133,7 +226,8 @@ class FeedCell: UICollectionViewCell {
         addSubview(profileImageView)
         addSubview(statusTextView)
         addSubview(statusImageView)
-        addSubview(likesCommentsLabel)
+        addSubview(likesLabel)
+        addSubview(commentsLabel)
         addSubview(dividerLineView)
         addSubview(likeButton)
         addSubview(commentButton)
@@ -142,11 +236,12 @@ class FeedCell: UICollectionViewCell {
         addContraintWithFormat(format: "H:|-8-[v0(44)]-8-[v1]|", views: profileImageView, nameLabel)
         addContraintWithFormat(format: "H:|-4-[v0]-4-|", views: statusTextView)
         addContraintWithFormat(format: "H:|[v0]|", views: statusImageView)
-        addContraintWithFormat(format: "H:|-12-[v0]|", views: likesCommentsLabel)
+        addContraintWithFormat(format: "H:|-12-[v0]-16-[v1]|", views: likesLabel, commentsLabel)
         addContraintWithFormat(format: "H:|-12-[v0]-12-|", views: dividerLineView)
         addContraintWithFormat(format: "H:|[v0(v2)][v1(v2)][v2]|", views: likeButton, commentButton, shareButton)
         addContraintWithFormat(format: "V:|-12-[v0]", views: nameLabel)
-        addContraintWithFormat(format: "V:|-8-[v0(44)]-4-[v1(30)]-4-[v2]-8-[v3(24)]-8-[v4(0.4)][v5(44)]|", views: profileImageView, statusTextView, statusImageView, likesCommentsLabel, dividerLineView, likeButton)
+        addContraintWithFormat(format: "V:|-8-[v0(44)]-4-[v1]-4-[v2(200)]-8-[v3(24)]-8-[v4(0.4)][v5(44)]|", views: profileImageView, statusTextView, statusImageView, likesLabel, dividerLineView, likeButton)
+        addContraintWithFormat(format: "V:[v0(128)]|", views: commentsLabel)
         addContraintWithFormat(format: "V:[v0(44)]|", views: commentButton)
         addContraintWithFormat(format: "V:[v0(44)]|", views: shareButton)
 
